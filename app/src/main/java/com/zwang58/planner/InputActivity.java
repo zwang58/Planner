@@ -6,7 +6,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.Calendar;
+import java.util.Date;
 
 public class InputActivity extends AppCompatActivity {
 
@@ -26,7 +30,19 @@ public class InputActivity extends AppCompatActivity {
             public void onClick(View view) {
                 String t = title.getText().toString();
                 String d = desc.getText().toString();
-                JSONObject item;
+                JSONObject item = new JSONObject();
+                Date now = Calendar.getInstance().getTime();
+
+                try {
+                    item.put("title",t);
+                    item.put("desc",d);
+                    item.put("time",now.getTime());
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+
 
             }
         });
