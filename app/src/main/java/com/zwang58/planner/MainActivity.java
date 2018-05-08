@@ -5,6 +5,9 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -20,6 +23,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -37,10 +41,8 @@ public class MainActivity extends AppCompatActivity {
 
     protected void onResume(){
         super.onResume();
-        TextView text = findViewById(R.id.text);
+        TextView text = findViewById(R.id.empty);
         text.setVisibility(View.INVISIBLE);
-
-        Log.d(TAG, ""+getFilesDir());
 
         jos = null;
         try{
@@ -48,11 +50,6 @@ public class MainActivity extends AppCompatActivity {
             File f = new File(getFilesDir(), "file.ser");
             FileInputStream fi = new FileInputStream(f);
             ObjectInputStream o = new ObjectInputStream(fi);
-            // Notice here that we are de-serializing a String object (instead of
-            // a JSONObject object) and passing the String to the JSONObject’s
-            // constructor. That’s because String is serializable and
-            // JSONObject is not. To convert a JSONObject back to a String, simply
-            // call the JSONObject’s toString method.
             String j = null;
             try{
                 j = (String) o.readObject();
@@ -68,67 +65,80 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-            // Show the list
-            final ArrayList<ListData> aList = new ArrayList<ListData>();
-            for(int i = 0; i < ja.length(); i++){
+            if (ja.length() == 0) {
+                list.setEnabled(false);
+                list.setVisibility(View.INVISIBLE);
+                text.setVisibility(View.VISIBLE);
 
-                ListData ld = new ListData();
-                try {
-                    ld.firstText = ja.getJSONObject(i).getString("first");
-                    ld.secondText = ja.getJSONObject(i).getString("second");
-                } catch (JSONException e1) {
-                    e1.printStackTrace();
+            }else {
+                // Show the list
+                final List<String> aList = new ArrayList<>();
+                for (int i = 0; i < ja.length(); i++) {
+                    try {
+                        aList.add(ja.getJSONObject(i).getString("title"));
+                    } catch (JSONException e1) {
+                        e1.printStackTrace();
+                    }
                 }
 
-                aList.add(ld);
+                // Show the list view with the each list item an element from listItems
+                ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, aList);
+                list.setAdapter(adapter);
+
+                // Set an OnItemClickListener for each of the list items
+                final Context context = this;
+                list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        try {
+                            JSONObject tmp = ja.getJSONObject(position);
+
+                            Intent detailIntent = new Intent(context, DetailsActivity.class);
+                            detailIntent.putExtra("title", tmp.getString("title"));
+                            detailIntent.putExtra("desc", tmp.getString("desc"));
+                            detailIntent.putExtra("time", tmp.getString("time"));
+                            detailIntent.putExtra("date", tmp.getString("date"));
+                            //detailIntent.putExtra("gps", tmp.getString("gps"));
+                            detailIntent.putExtra("index", position);
+                            startActivity(detailIntent);
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                });
             }
-
-            // Create an array and assign each element to be the title
-            // field of each of the ListData objects (from the array list)
-            String[] listItems = new String[aList.size()];
-
-            for(int i = 0; i < aList.size(); i++){
-                ListData listD = aList.get(i);
-                listItems[i] = listD.firstText;
-            }
-
-            // Show the list view with the each list item an element from listItems
-            ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_list_item_1, listItems);
-            list.setAdapter(adapter);
-
-            // Set an OnItemClickListener for each of the list items
-            final Context context = this;
-            list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-                @Override
-                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                    ListData selected = aList.get(position);
-
-                    // Create an Intent to reference our new activity, then call startActivity
-                    // to transition into the new Activity.
-                    Intent detailIntent = new Intent(context, DetailActivity.class);
-
-                    // pass some key value pairs to the next Activity (via the Intent)
-                    detailIntent.putExtra("first", selected.firstText);
-                    detailIntent.putExtra("second", selected.secondText);
-
-                    startActivity(detailIntent);
-                }
-
-            });
         }
         catch(IOException e){
-            // There's no JSON file that exists, so don't
-            // show the list. But also don't worry about creating
-            // the file just yet, that takes place in AddText.
-
-            //Here, disable the list view
             list.setEnabled(false);
             list.setVisibility(View.INVISIBLE);
-
-            //show the text view
             text.setVisibility(View.VISIBLE);
         }
+    }
+
+    // This method will just show the menu item (which is our button "ADD")
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu items for use in the action bar
+        MenuInflater inflater = getMenuInflater();
+        // the menu being referenced here is the menu.xml from res/menu/menu.xml
+        inflater.inflate(R.menu.menu, menu);
+        return super.onCreateOptionsMenu(menu);
+
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.add:
+                Intent i = new Intent(this, InputActivity.class);
+                startActivity(i);
+            default:
+                super.onOptionsItemSelected(item);
+        }
+        return true;
     }
 }

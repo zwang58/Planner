@@ -24,9 +24,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
 public class InputActivity extends AppCompatActivity {
 
@@ -86,18 +89,23 @@ public class InputActivity extends AppCompatActivity {
                 String t = title.getText().toString();
                 String d = desc.getText().toString();
                 Date now = Calendar.getInstance().getTime();
+                DateFormat date = new SimpleDateFormat("MM/dd/yyyy");
+                DateFormat time = new SimpleDateFormat("hh:mm:ss a");
+                date.setTimeZone(TimeZone.getTimeZone("PDT"));
+                time.setTimeZone(TimeZone.getTimeZone("PDT"));
 
-                JSONObject temp = new JSONObject();
+                JSONObject newEvent = new JSONObject();
                 try {
-                    temp.put("title", t);
-                    temp.put("desc", d);
-                    temp.put("time",now.toString());
+                    newEvent.put("title", t);
+                    newEvent.put("desc", d);
+                    newEvent.put("time",time.format(now));
+                    newEvent.put("date",date.format(now));
+                    ja.put(newEvent);
+                    jo.put("data",ja);
                 }
                 catch(JSONException j){
                     j.printStackTrace();
                 }
-
-                ja.put(temp);
 
                 // write the file
                 try{
@@ -110,11 +118,11 @@ public class InputActivity extends AppCompatActivity {
                     fo.close();
                 }
                 catch(IOException e){
-
+                    e.printStackTrace();
                 }
 
                 String toast = "title: " + t + "\ndesc: " + d + "\ntime: " + now.toString() + "\ngps: ";
-                Toast.makeText(InputActivity.this, toast, Toast.LENGTH_SHORT).show();
+                Toast.makeText(InputActivity.this, toast, Toast.LENGTH_LONG).show();
 
                 Intent intent = new Intent(InputActivity.this, MainActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
