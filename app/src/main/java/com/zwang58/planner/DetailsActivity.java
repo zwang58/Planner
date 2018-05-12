@@ -45,7 +45,7 @@ public class DetailsActivity extends AppCompatActivity {
         index = i.getIntExtra("index", -1);
         title_content.setText(i.getStringExtra("title"));
         desc_content.setText(i.getStringExtra("desc"));
-        //gps_content.setText(i.getStringExtra("gps"));
+        gps_content.setText(i.getStringExtra("gps"));
         time_content.setText(i.getStringExtra("time"));
         date_content.setText(i.getStringExtra("date"));
 

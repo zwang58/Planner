@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
                             detailIntent.putExtra("desc", tmp.getString("desc"));
                             detailIntent.putExtra("time", tmp.getString("time"));
                             detailIntent.putExtra("date", tmp.getString("date"));
-                            //detailIntent.putExtra("gps", tmp.getString("gps"));
+                            detailIntent.putExtra("gps", tmp.getString("gps"));
                             detailIntent.putExtra("index", position);
                             startActivity(detailIntent);
 
